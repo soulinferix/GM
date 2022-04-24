@@ -1,22 +1,3 @@
-<?php
-
-
-if($_POST["message"]) {
-
-
-mail("luis.morales@vtxco.com", "Checklist de servicio en campo",
-
-
-$_POST["Hola, envío checklist de visita a campo"]. "From: luis.morales@vtxco.com");
-
-
-}
-
-
-?>
-
-
-
 <!doctype html>
 <html>
 <head>
@@ -31,14 +12,14 @@ $_POST["Hola, envío checklist de visita a campo"]. "From: luis.morales@vtxco.co
 	<script src="Checklist_JS.js" defer></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/FThompson/FormPersistence.js@1.0.1/form-persistence.min.js"></script>
-   <script src=
-"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.1/html2pdf.bundle.min.js" 
-        integrity=
-"sha512vDKWohFHe2vkVWXHp3tKvIxxXg0pJxeid5eo+UjdjME3DBFBn2F8yWOE0XmiFcFbXxrEOR1JriWEno5Ckpn15A==" 
-        crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>	
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
     </script>
+
 	
-</head>
+	</head>
 
 <body>
 	<header>
@@ -53,7 +34,7 @@ $_POST["Hola, envío checklist de visita a campo"]. "From: luis.morales@vtxco.co
 	<main>
 		<section>
 		<h2 name="datosvisita">Datos de la visita</h2>
-		<form class="form1" autocomplete="off" method="post" action="../checklist-servicio-data.php" id="form-print">
+		<form class="form1" autocomplete="off" method="post" action="../checklist-servicio-data.php">
 		<fieldset class="Visit_Data">
 
 			<div class="dealer_number">
@@ -261,7 +242,6 @@ comparado con la de Clientes.</label>
 
 				<label class="form3item1" for="yescount">Sí</label>
 				<span id="showAccept" class="counter"></span>	
-
 				
 				<label class="form3item2" for="yescount">No</label>
 				<span class="counter" id="showReject"></span>
@@ -679,7 +659,7 @@ Proceso Revisado de atención en Servicio?</label>
 	
 
 	<footer>
-	<button class="Submit" onclick="GeneratePdf();"><img src="GM_Gradient_Brandmark_RGB_small.png" alt="Submit button"><span>Enviar</span></button>
+	<button class="Submit" ><img src="GM_Gradient_Brandmark_RGB_small.png" alt="Submit button"><span>Enviar</span></button>
 	</footer>
 		</form>
 
