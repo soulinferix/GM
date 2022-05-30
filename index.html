@@ -1,0 +1,541 @@
+<!doctype html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Checklist evaluación servicio</title>
+		<meta name="viewport" content="width=device-width, minimum-scale=1, shrink-to-fit=yes"> 
+		<meta description="Formato de inspección en campo para Distric Managers de GMM">	
+		<meta name="author" content="Luis Morales">
+		<link rel="icon" href="./images/GM_Gradient_Brandmark_RGB_small.png" type="image/png">
+		<link rel="stylesheet" href="checklist_CSS.css">
+
+		<script src="./Checklist_JS.js" defer></script>
+		<script defer src="https://unpkg.com/alpinejs@3.10.2/dist/cdn.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+		<script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+		
+	</head>
+
+	<body id="form-print" enctype="text/plain" >
+
+		<header>
+			<div class="formheader fix-print">
+				<h1 class="pagetitle">Checklist de Servicio en campo</h1>
+				<img class="GMLogo" alt="GM Logo" src="./images/GM_Gradient_Brandmark_RGB_small.png">
+			</div>
+		</header>
+
+		<main>
+			<h2 name="datosvisita">Datos de la visita</h2>
+			<form class="form1" autocomplete="off" x-data="formData" @change="saveLocal">
+				<section>
+
+					<fieldset class="Visit_Data">
+						<p class="Dealer_Name">Nombre del Distribuidor:</p>
+							<p 
+							class="Name_Dealer" 
+							x-text="form.dealer"></p>
+						
+						<p class="dealer_number">
+							<label for="dealer_number_0" name="no. dealer">No. de Distribuidor (solo dígitos, no letras)</label>
+							<input 
+								x-model="form.provider"
+								@input="form.bac=''; form.dealer=''"
+								class="dealer_number_1" 
+								type="number" 
+								id="dealer_number" 
+								placeholder="BAC" 
+								name="dealer_number" 
+								list="dealernumber" 
+								required >
+							<datalist id="dealernumber">
+								<template x-for="item in Object.keys(providers)">
+									<option :value="item"/>
+								</template>
+							</datalist>
+							<small class="error" x-show="form.provider!=='' && !providers[form.provider]" x-text="`¡Este número de Distribuidor no existe!`"></small>
+						</p>
+				
+
+						<p class="BAC">
+							<label class= "BAC_0" for="BAC_1" name="no. BAC">BAC</label>
+							<select 
+								x-model="form.bac"
+								@change="setBac"
+								class="BAC_1" 
+								id="BAC_1" 
+								name="BAC_1" 
+							 	required>
+							 	<option value="">Bac</option>
+							 	<template x-for="item in providers[form.provider]">
+									<option :value="item.bac" x-text="item.bac" :selected="form.bac === item.bac"></option>
+								</template>
+						 	</select>
+						</p>
+
+
+						<p class="visit_data_1">
+							<label class="visit_data_1_1" for="visit_date" name="date">Fecha</label>
+							<input x-model="form.visit_date" class="visit_data_1_2" type="date" id="visit_date" name="visit_date" required>
+						</p>
+						<p class="visit_data_2">
+							<label class="visit_data_2_1" for="observation_date" name="fecha observacion">Hora de observación</label>
+							<input x-model="form.observation_date" class="visit_data_2_2" type="time" id="observation_date" name="observation_date" required>
+						</p>
+						<p class="visit_data_3">
+							<label class="visit_data_3_1" for="observation_time_reception" name="horaobser">Hora de observación - Recepción</label>
+							<input x-model="form.observation_time_reception" class="visit_data_3_2" type="time" id="observation_time_reception" name="observation_time_reception" required>
+						</p>
+						<p class="visit_data_4">
+							<label class="visit_data_4_1" for="observation_time_delivery" name="hora entrega">Hora de observación - Entrega</label>
+							<input x-model="form.observation_time_delivery" class="visit_data_4_2	" type="time" id="observation_time_delivery" name="observation_time_delivery" required>
+						</p>
+					</fieldset>
+				</section>
+
+				<section>
+					<h2 name="Situacion" class="Situacion">Situación del área de Servicio al momento de la visita</h2>
+					<fieldset class="Visit_Circumstances">
+						<p class="form2header1">Situación</p>
+						<p class="form2header2">Marcar una opción</p>
+	
+						<label class="form2item1" for="f2checkbox1">Extremadamente ocupado; demasiados Clientes y staff de
+							servicio no suficiente.</label>
+						<div class="f2checkbox1_div">
+						<input x-model="form.situacion1" class="form2checkbox1" type="checkbox" id="f2checkbox1" name="situacion1" @click="checkSituation('situacion1')">
+						</div>
+						<label class="form2item2" for="f2checkbox2">Todo el staff de servicio ocupado y atendiendo, no hay Clientes esperando</label>
+						<input x-model="form.situacion2" class= "form2checkbox2" type="checkbox" id="f2checkbox2" name="situacion2" @click="checkSituation('situacion2')">
+
+						
+						<label class="form2item3" for="f2checkbox3">Tranquilidad (poca actividad) del personal de servicio
+							comparado con la de Clientes.</label>
+						<input x-model="form.situacion3" class= "form2checkbox3" type="checkbox" id="f2checkbox3" name="situacion3" @click="checkSituation('situacion3')">
+					</fieldset>
+				</section>
+
+				<section>
+					<h2 class="receptionsticky fix-print">Proceso de recepción</h2>
+					<fieldset class="Reception">
+
+						<div class="whitebkgrd_reception fix-print"></div>
+						<p class="form4header1 fix-print">Situación</p>
+						<p class="form4header2 fix-print">Sí</p>
+						<p class="form4header3 fix-print">No</p>
+						<p class="form4header4 fix-print">Comentarios</p>
+						<p class="form4header5 fix-print">Material de apoyo para DMA</p>
+
+						<label class="form4item1">1. ¿El Asesor de Servicio comienza a atender al Cliente en los primeros 2 minutos?</label>
+						<input x-model="form.question1" class="form4item1radio1" type="radio" name="question1" id="a" value="Accept" required>
+						<input x-model="form.question1" class="form4item1radio2" type="radio" name="question1" id="b" value="Reject">
+						<textarea x-model="form.comment[1]" class="form4item1comment" placeholder="Escribe tus notas aquí"></textarea>
+						<div class="borderline1"></div>
+								
+						<label class="form4item2">2. ¿El proceso con el Cliente <b>ALREDEDOR DE SU VEHÍCULO</b> se lleva a cabo conforme al “Proceso Revisado de 	zAtención en Servicio”?</label>
+						<input x-model="form.question2" class="form4item2radio1" type="radio" name="question2" id="a2" value="Accept" required>
+						<input x-model="form.question2" class="form4item2radio2" type="radio" name="question2" id="b2" value="Reject">
+						<textarea x-model="form.comment[2]" class="form4item2comment" placeholder="Escribe tus notas aquí"></textarea>
+						<div class="borderline2"></div>
+								
+						<label class="form4item3">3. ¿El proceso con el Cliente en el <b>CUBÍCULO DEL ASESOR DE SERVICIO</b> se lleva a cabo conforme al “Proceso Revisado de Atención en Servicio” <b>hasta despedirlo?</b></label>
+						<input x-model="form.question3" class="form4item3radio1" type="radio" name="question3" id="e" value="Accept" required>
+						<input x-model="form.question3" class="form4item3radio2" type="radio" name="question3" id="f" value="Reject">
+						<textarea x-model="form.comment[3]" class="form4item3comment" placeholder="Escribe tus notas aquí"></textarea>
+						<div class="borderline3"></div>
+						
+						<p class="multianswer1">4. El tiempo de atención desde el inicio hasta despedir el Cliente es:</p>
+						<label class="form4item4_1">Igual o menos de 15 min</label>
+						<input x-model="form.question4" class="form4item4_1radio1" type="radio" name="question4" id="g" value="Accept" required>
+
+						<label class="form4item4_2">De 15 a 30 minutos</label>
+						<input x-model="form.question4" class="form4item4_2radio1" type="radio" name="question4" id="h" value="Reject">
+
+						
+						<label class="form4item4_3">Más de 30 minutos</label>
+						<input x-model="form.question4" class="form4item4_3radio1" type="radio" name="question4" id="i" value="Reject">
+
+						<textarea x-model="form.comment[5]" class="multicomm1" placeholder="Escribe tus notas aquí"></textarea>
+						
+						<div class="borderline4"></div>
+							
+
+						<p class="multianswer2">Los Consultores de Servicio muestran:</p>
+						<label class="form4item5_1">5. Atención y cortesía en todo momento</label>
+						<input x-model="form.question5_1" class="form4item5_1radio1" type="radio" name="question5_1" id="j" value="Accept" required>
+						<input x-model="form.question5_1" class="form4item5_1radio2" type="radio" name="question5_1" id="k" value="Reject">
+
+						<label class="form4item5_2">6. Conocimiento, calidad y detalle en las explicaciones</label>
+						<input x-model="form.question5_2" class="form4item5_2radio1" type="radio" name="question5_2" id="l" value="Accept" required>
+						<input x-model="form.question5_2" class="form4item5_2radio2" type="radio" name="question5_2" id="m" value="Reject">
+
+						<textarea x-model="form.comment[6]" class="multicomm2" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline5"></div>
+						
+						<label class="form4item6">7. ¿Aplican correctamente las “Acciones de Éxito” (Quick Wins)?</label>
+						<input x-model="form.question6" class="form4item6radio1" type="radio" name="question6" id="n" value="Accept" required>
+						<input x-model="form.question6" class="form4item6radio2" type="radio" name="question6" id="o" value="Reject">
+						<textarea x-model="form.comment[7]" class="form4item6comment" placeholder="Escribe tus notas aquí" ></textarea>
+						
+						<div class="form4jobaid1_back">
+						</div>
+						<p class="form4jobaid1"><a href="https://www.centerlearning.com/Scorm/CourseOutline.asp?iQueryID1=40&sFieldName1=sStuffedCriteria&iDatatypeID1=2&iFilterID1=1&sCriteria1=tCourse%2EsCourseName%3AtCourse%2EsCourseNumber%3AtCourse%2EmCourseDescription%2C7%2C2%2Cpilares%7CtSortType%2EiSortTypeID%2C1%2C1%2C3%7CbActive%2C1%2C1%2C1&iResultSet1=1&iSectionID1=1&iPageID1=269&sPageName1=%2E%2E%2Fcatalog%2Findex%2Easp&iQueryID2=30&sFieldName2=tCourse%2EiCourseID&iDatatypeID2=25&iFilterID2=1&sCriteria2=23913&iResultSet2=1&iSectionID2=1&iPageID2=0&sPageName2=%2E%2E%2Fcatalog%2Fedit%2Easp&iRecordCount=2" target="blank">Proceso rediseñado "Atención a clientes en Servicio"</a></p>
+
+						<div class="form4jobaid2_back">
+						</div>
+						<p class="form4jobaid2"><a href="https://gmm-cxboost.raytr.com/uploads/2022-4/infographic_serviceprocess01.pdf" target="_blank">Infografía digital "6 básicos"</a></p>
+					</fieldset>
+				</section>
+						
+
+				<section>
+					<h2 class="followupsticky fix-print">Seguimiento</h2>
+					<fieldset class="FollowUp">
+
+						<div class="whitebkgrd_followup fix-print"></div>
+						<p class="form5header1 fix-print">Situación</p>
+						<p class="form5header2 fix-print">Sí</p>
+						<p class="form5header3 fix-print">No</p>
+						<p class="form5header4 fix-print">Comentarios</p>
+						<p class="form5header5 fix-print">Material de apoyo para DMA</p>
+
+
+						<label class="form5item1">8. ¿El Distribuidor lleva a cabo los pasos conforme al “Proceso Revisado de Atención en Servicio”?</label>
+						<input x-model="form.question7" class="form5item1radio1" type="radio" name="question7" id="p" value="Accept" required>
+						<input x-model="form.question7" class="form5item1radio2" type="radio" name="question7" id="q" value="Reject">
+						<textarea x-model="form.comment[8]" class="form5item1comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline6"></div>
+		
+						<label class="form5item2">9. El Distribuidor realiza una comunicación proactiva con los Clientes:</label>
+						<input x-model="form.question8" class="form5item2radio1" type="radio" name="question8" id="r" value="Accept" required>
+						<input x-model="form.question8" class="form5item2radio2" type="radio" name="question8" id="s" value="Reject">
+						
+						<p class="multianswer3">En caso afirmativo seleccione las que apliquen (estas selecciones no influyen en el porcentaje de cumplimiento):</p>
+
+						<label class="form5item3_1">Llamada telefónica al Cliente</label>
+						<input x-model="form.question8_1" class="form5item3_1radio1" type="radio" name="question8_1" id="r2" required>
+						<input x-model="form.question8_1" class="form5item3_1radio2" type="radio" name="question8_1" id="s2" >
+
+						
+						<label class="form5item3_2">Mensaje de texto: SMS / WhatsApp / correo electrónico</label>
+						<input x-model="form.question8_2" class="form5item3_2radio1" type="radio" name="question8_2" id="r3" required>
+						<input x-model="form.question8_2" class="form5item3_2radio2" type="radio" name="question8_2" id="s3" >
+
+						
+						<label class="form5item3_3">Agenda / horarios de llamadas a Clientes</label>
+						<input x-model="form.question8_3" class="form5item3_3radio1" type="radio" name="question8_3" id="r4" required>
+						<input x-model="form.question8_3" class="form5item3_3radio2" type="radio" name="question8_3" id="s4">
+						<textarea x-model="form.comment[9]" class="multicomm3" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="form5jobaid1_div">	</div>		
+						<p class="form5jobaid1"><a href="https://www.centerlearning.com/Scorm/CourseOutline.asp?iQueryID1=40&sFieldName1=sStuffedCriteria&iDatatypeID1=2&iFilterID1=1&sCriteria1=tCourse%2EsCourseName%3AtCourse%2EsCourseNumber%3AtCourse%2EmCourseDescription%2C7%2C2%2Cpilares%7CtSortType%2EiSortTypeID%2C1%2C1%2C3%7CbActive%2C1%2C1%2C1&iResultSet1=1&iSectionID1=1&iPageID1=269&sPageName1=%2E%2E%2Fcatalog%2Findex%2Easp&iQueryID2=30&sFieldName2=tCourse%2EiCourseID&iDatatypeID2=25&iFilterID2=1&sCriteria2=23913&iResultSet2=1&iSectionID2=1&iPageID2=0&sPageName2=%2E%2E%2Fcatalog%2Fedit%2Easp&iRecordCount=2" target="blank">Proceso rediseñado "Atención a clientes en Servicio"</a></p>
+					</fieldset>
+				</section>
+
+	
+				<section>
+					<h2 class="deliverysticky fix-print">Proceso de Entrega</h2>
+					<fieldset class="Delivery">
+
+						<div class="whitebkgrd_delivery fix-print"></div>
+						<p class="form6header1 fix-print">Situación</p>
+						<p class="form6header2 fix-print">Sí</p>
+						<p class="form6header3 fix-print">No</p>
+						<p class="form6header4 fix-print">Comentarios</p>
+						<p class="form6header5 fix-print">Material de apoyo para DMA</p>
+
+						<label class="form6item1">10. ¿El proceso con el Cliente en el <b>CUBÍCULO DEL ASESOR DE SERVICI</b>O se lleva a cabo conforme al “Proceso Revisado de Atención en Servicio”?</label>
+						<input x-model="form.question9" class="form6item1radio1" type="radio" name="question9" id="u" value="Accept" required>
+						<input x-model="form.question9" class="form6item1radio2" type="radio" name="question9" id="v" value="Reject">
+						<textarea x-model="form.comment[10]" class="form6item1comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline7"></div>
+									
+						<label class="form6item2">11. ¿El proceso con el Cliente <b>ALREDEDOR DE SU VEHICULO</b> se lleva a cabo conforme al “Proceso Revisado de Atención en Servicio” <b>hasta despedirlo?</b></label>
+						<input x-model="form.question10" class="form6item2radio1" type="radio" name="question10" id="w" value="Accept" required>
+						<input x-model="form.question10" class="form6item2radio2" type="radio" name="question10" id="x" value="Reject">
+						<textarea x-model="form.comment[11]" class="form6item2comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline8"></div>
+							
+						<p class="multianswer4">12. El tiempo de atención desde el inicio hasta despedir el Cliente es:</p>
+						<label class="form6item3_1">Menos de 15 minutos</label>
+						<input x-model="form.question11" class="form6item3_1radio1" type="radio" name="question11" id="y" value="Accept" required>
+
+						<label class="form6item3_2">De 15 a 30 minutos</label>
+						<input x-model="form.question11" class="form6item3_2radio1" type="radio" name="question11" id="z" value="Reject">
+
+						<label class="form6item3_3">Más de 30 minutos</label>
+						<input x-model="form.question11" class="form6item3_3radio1" type="radio" name="question11" id="aa" value="Reject">
+						<textarea x-model="form.comment[12]" class="multicomm4" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline9"></div>
+							
+						<label class="form6item4">13. ¿El Distribuidor mide y cumple con la FECHA y HORA de entrega?</label>
+						<input x-model="form.question12" class="form6item4radio1" type="radio" name="question12" id="ab" value="Accept" required>
+						<input x-model="form.question12" class="form6item4radio2" type="radio" name="question12" id="ac" value="Reject">
+						<textarea x-model="form.comment[13]" class="form6item4comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline10"></div>
+							
+						<label class="form6item5">14. ¿Se aplican correctamente las “Acciones de Éxito” (Quick Wins)?</label>
+						<input x-model="form.question13" class="form6item5radio1" type="radio" name="question13" id="ad" value="Accept" required>
+						<input x-model="form.question13" class="form6item5radio2" type="radio" name="question13" id="ae" value="Reject">
+						<textarea x-model="form.comment[14]" class="form6item5comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline11"></div>
+							
+						<label class="form6item6">15. ¿La aplicación de la ENCUESTA DE PULSO se lleva a cabo conforme a las MEJORES PRACTICAS y SCRIPT proporcionado por GM?</label>
+						<input x-model="form.question14" class="form6item6radio1" type="radio" name="question14" id="af" value="Accept" required>
+						<input x-model="form.question14" class="form6item6radio2" type="radio" name="question14" id="ag" value="Reject">
+						<textarea x-model="form.comment[15]" class="form6item6comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<p class="form6item6note1">Observar cómo aplican encuestas a Clientes</p>
+						<p class="form6item6note2">Verificar que haya señalizaciones con código QR</p>
+
+						<div class="form6jobaid1_back"></div>
+						<p class="form6jobaid1"><a href="https://www.centerlearning.com/Scorm/CourseOutline.asp?iQueryID1=40&sFieldName1=sStuffedCriteria&iDatatypeID1=2&iFilterID1=1&sCriteria1=tCourse%2EsCourseName%3AtCourse%2EsCourseNumber%3AtCourse%2EmCourseDescription%2C7%2C2%2Cpilares%7CtSortType%2EiSortTypeID%2C1%2C1%2C3%7CbActive%2C1%2C1%2C1&iResultSet1=1&iSectionID1=1&iPageID1=269&sPageName1=%2E%2E%2Fcatalog%2Findex%2Easp&iQueryID2=30&sFieldName2=tCourse%2EiCourseID&iDatatypeID2=25&iFilterID2=1&sCriteria2=23913&iResultSet2=1&iSectionID2=1&iPageID2=0&sPageName2=%2E%2E%2Fcatalog%2Fedit%2Easp&iRecordCount=2" target="blank">Proceso rediseñado "Atención a clientes en Servicio"</a></p>
+
+						<div class="form6jobaid2_back">
+						<p class="form6jobaid2"><a href="https://gmm-cxboost.raytr.com/uploads/2022-4/infographic_serviceprocess01.pdf" target="_blank">Infografía digital "6 básicos"</a></p>
+						</div>
+						<div class="form6jobaid3_back">
+						</div>
+						<p class="form6jobaid3"><a href="https://gmm-cxboost.raytr.com/journey?id=bestPractices&mid=material-pulso&aid=infograf%C3%ADa-pulso" target="_blank">Infografía digital Pulso</a>
+						<br><a href="https://gmm-cxboost.raytr.com/journey?id=bestPractices&mid=material-pulso&aid=guion-pulso" target="_blank">Script aplicación de encuesta de Pulso</a>
+						</p>
+
+							
+					</fieldset>
+					<p class="page1footer">Acordar acción requerida por parte del Distribuidor dentro del PLAN DE ACCIÓN para respuestas “NO”, así como para tiempos de atención en entrega / recepción mayores a 15 minutos y fecha / hora de entrega incumplida.</p>
+
+				</section>
+
+
+				<section>
+					<h2 class="worksessionsticky fix-print">En sesión de trabajo con Gerente de Servicio y Líder de Calidad</h2>
+					<fieldset class="WorkSession fix-print">
+
+						<div class="whitebkgrd_worksession fix-print"></div>
+						<p class="form8header1 fix-print">Encuesta de Pulso</p>
+						<p class="form8header2 fix-print">Sí</p>
+						<p class="form8header3 fix-print">No</p>
+						<p class="form8header4 fix-print">Comentarios</p>
+						<p class="form8header5 fix-print">Material de apoyo para DMA</p>
+			
+						<label class="form8item1">1. ¿Existe correlación entre resultados de PULSO y CSI?
+						<br>
+						<br>PULSO CSI &#47; NPS &#62; Platforma CSI &#47; NPS &#38; VOC ---&#62; Requiere
+						Plan de acción</label>
+						<input x-model="form.section2q1" class="form8item1radio1" type="radio" name="section2q1" id="ah" value="Accept2" required>
+						<input x-model="form.section2q1" class="form8item1radio2" type="radio" name="section2q1" id="ai" value="Reject2">
+						<textarea x-model="form.comment[16]" class="form8item1comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline12"></div>
+									
+						<p class="multianswer5">El Distribuidor ha difundido y asegurado que cada
+						integrante en servicio aplique:</p>			
+						<label class="form8item2_1">2. Infografía de Pulso (Enfoque y mejores prácticas)</label>
+						<input x-model="form.section2q2_1" class="form8item2_1radio1" type="radio" name="section2q2_1" id="aj" value="Accept2" required>
+						<input x-model="form.section2q2_1" class="form8item2_1radio2" type="radio" name="section2q2_1" id="ak" value="Reject2">
+
+						<label class="form8item2_2">3. Script de Pulso (¿Cómo invitar a los Clientes a contestar pulso?)</label>
+						<input x-model="form.section2q2_2" class="form8item2_2radio1" type="radio" name="section2q2_2" id="al" value="Accept2" required>
+						<input x-model="form.section2q2_2" class="form8item2_2radio2" type="radio" name="section2q2_2" id="am" value="Reject2">
+						<textarea x-model="form.comment[17]" class="multicomm5" placeholder="Escribe tus notas aquí"></textarea>
+			
+						<div class="borderline13"></div>
+									
+						<p class="multianswer6">La notificación de HOT ALERTS en la aplicación de Pulso
+						funciona correctamente para:</p>			
+						<label class="form8item3_1">4. Gerente de Servicio</label>
+						<input x-model="form.section2q3_1" class="formitem3_1radio1" type="radio" name="section2q3_1" id="an" value="Accept2" required>
+						<input x-model="form.section2q3_1" class="formitem3_1radio2" type="radio" name="section2q3_1" id="ao" value="Reject2">
+
+						<label class="form8item3_2">5. Líder de Calidad</label>
+						<input x-model="form.section2q3_2" class="formitem3_2radio1" type="radio" name="section2q3_2" id="ap" value="Accept2" required>
+						<input x-model="form.section2q3_2" class="formitem3_2radio2" type="radio" name="section2q3_2" id="aq" value="Reject2">
+
+						<label class="form8item3_3">Personal asignado para atender Clientes (especificar qué puestos tienen)</label>
+						<textarea x-model="form.comment[18]" class="multicomm6" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline14"></div>
+			
+						<p class="form8itemadded">El Gerente de Servicio y Líder de Calidad deberán mostrar si:</p>
+
+						<label class="form8itemadded_1">6. Conocen dónde revisar su calificación de CSI/NPS de Pulso</label>
+						
+						<input x-model="form.section2qadded" class="formitemaddedradio1" type="radio" name="section2qadded" id="at2" value="Accept2" required>
+						<input x-model="form.section2qadded" class="formitemaddedradio2" type="radio" name="section2qadded" id="au2" value="Reject2">
+
+						<label class="form8itemadded_2">7. Cumplen con el objetivo del 70% de Encuestas de Pulso vs OR (público y garantía)</label>
+						
+						<input x-model="form.section2qadded2" class="formitemadded_2radio1" type="radio" name="section2qadded2" id="at2_2" value="Accept2" required>
+						<input x-model="form.section2qadded2" class="formitemadded_2radio2" type="radio" name="section2qadded2" id="au2_2" value="Reject2">
+						
+						
+						<textarea x-model="form.comment[18]" class="multicommadded" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline15"></div>
+			
+						<label class="form8item4">8. ¿El Distribuidor analiza la calidad de información en Encuestas de Pulso?</label>
+						<input x-model="form.section2q4" class="formitem4radio1" type="radio" name="section2q4" id="at" value="Accept2" required>
+						<input x-model="form.section2q4" class="formitem4radio2" type="radio" name="section2q4" id="au" value="Reject2">
+						<textarea x-model="form.comment[19]" class="multicomm7" placeholder="Escribe tus notas aquí"></textarea>
+
+			
+						<p class="form8item4note1">Si alguno de los puntos de análisis no se realiza, el punto 5 se encuentra en incumplimiento (marcar la casilla “NO”):</p>
+						<p class="form8item4note2">-% de encuestas sin comentarios vs total de encuestas en el mes</p>
+						<p class="form8item4note3">-% de encuestas comentarios SENTIMIENTO NEGATIVO vs total de encuestas en el mes</p>
+						<p class="form8item4note4">-% de Hot Alerts en Pulso vs total de encuestas en el mes</p>
+						<p class="form8item4note5">-Acciones puntuales de mejora con base en el análisis de información de la Encuesta de Pulso</p>
+
+						<div class="borderline16"></div>
+			
+						<label class="form8item2ndadded">9. ¿Cuenta el Distribuidor con un proceso de recuperación de clientes por HA de Pulso (evidencia de procesos y responsables, así como casos documentados)?</label>
+						<input x-model="form.section2qadded3" class="formitem2ndaddedradio1" type="radio" name="section2qadded3" id="at3" value="Accept2" required>
+						<input x-model="form.section2qadded3" class="formitem2ndaddedradio2" type="radio" name="section2qadded3" id="au3" value="Reject2">
+						<textarea x-model="form.comment[20]" class="multicommadded2" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline17"></div>
+									
+						<div class="form8jobaid1_back">
+						</div>
+						<p class="form8jobaid1"><a href="https://msbipbirs03.gm.com/Reports/browse/MAXIS/NonEDA/CCA-15418/CCA%20Mexico/Customer%20Experience" target="_blank">Reporte mensual revisado
+							<br>Resultados CX</a></p>
+
+
+						<div class="form8jobaid2_back">
+						</div>
+						<p class="form8jobaid2"><a href="https://gmm-cxboost.raytr.com/journey?id=bestPractices&mid=material-pulso&aid=infograf%C3%ADa-pulso" target="_blank">Infografía digital Pulso</a>
+							<br><a href="https://gmm-cxboost.raytr.com/journey?id=bestPractices&mid=material-pulso&aid=guion-pulso" target="_blank">Script aplicación encuesta de Pulso</a></p>
+
+
+						<div class="form8jobaid3_back">
+						</div>
+						<p class="form8jobaid3"><a href="https://gmm-cxboost.raytr.com/journey?id=learn&mid=CX_4.0" target="_blank">Manual de usuario de plataforma de Pulso</a></p>
+					</fieldset>
+				</section>
+				<section>
+					<h2 class="worksessionsticky fix-print"></h2>
+					<fieldset class="WorkSession">
+						<div class="whitebkgrd_worksession_2 fix-print"></div>
+						<p class="form8header1_2 fix-print">CSI &#38; VOC</p>
+						<p class="form8header2_2 fix-print">Sí</p>
+						<p class="form8header3_2 fix-print">No</p>
+						<p class="form8header4_2 fix-print">Comentarios</p>
+						<p class="form8header5_2 fix-print">Material de apoyo para DMA</p>
+
+							
+						<label class="form8item5">10. ¿Existe un proceso para asegurar la calidad de los registros en su DMS para las encuestas de CSI?</label>
+						<input x-model="form.section2q5" class="form8item5radio1" type="radio" name="section2q5" id="av" value="Accept2" required>
+						<input x-model="form.section2q5" class="form8item5radio2" type="radio" name="section2q5" id="aw" value="Reject2">
+						<textarea x-model="form.comment[21]" class="form8item5comment" placeholder="Escribe tus notas aquí"></textarea>
+					
+						<div class="borderline18"></div>
+									
+									
+						<label class="form8item6">11. ¿Cuenta con esquema retador y alcanzable de bonificación por cumplimiento de CSI y “0” HA para Asesores de Servicio?</label>
+						<input x-model="form.section2q6" class="form8item6radio1" type="radio" name="section2q6" id="ax" value="Accept2" required>
+						<input x-model="form.section2q6" class="form8item6radio2" type="radio" name="section2q6" id="ay" value="Reject2">
+						<textarea x-model="form.comment[22]" class="form8item6comment" placeholder="Escribe tus notas aquí"></textarea>
+		
+						<div class="borderline19"></div>
+			
+						<label class="form8item7">12. ¿El Distribuidor conoce las 3 prioridades de mejora con base a sus VERBATIMS? (Sentimiento Negativo)</label>
+						<input x-model="form.section2q7" class="form8item7radio1" type="radio" name="section2q7" id="az" value="Accept2" required>
+						<input x-model="form.section2q7" class="form8item7radio2" type="radio" name="section2q7" id="aaa" value="Reject2">
+						<textarea x-model="form.comment[23]" class="form8item7comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline20"></div>
+			
+						<label class="form8item8">13. ¿Cuenta con revisiones programadas con su equipo de
+			servicio para revisar PULSO y desempeño de CSI / NPS (Plataforma de InMoment)? ¿Tiene evidencia?</label>
+						<input x-model="form.section2q8" class="form8item8radio1" type="radio" name="section2q8" id="aab" value="Accept2" required>
+						<input x-model="form.section2q8" class="form8item8radio2" type="radio" name="section2q8" id="aac" value="Reject2">
+						<textarea x-model="form.comment[24]" class="form8item8comment" placeholder="Escribe tus notas aquí"></textarea>
+		
+						<div class="borderline21"></div>
+			
+						<label class="form8item9">14. ¿El Gerente de Servicio revisa con su equipo el One
+			Pager de Posventa?</label>
+						<input x-model="form.section2q9" class="form8item9radio1" type="radio" name="section2q9" id="aad" value="Accept2" required>
+						<input x-model="form.section2q9" class="form8item9radio2" type="radio" name="section2q9" id="aae" value="Reject2">
+						<textarea x-model="form.comment[25]" class="form8item9comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline22"></div>
+			
+						<label class="form8item10">15. ¿Cuenta con acciones puntuales en su Plan de Mejora considerando los resultados de CSI / NPS &#38; Verbatims?</label>
+						<input x-model="form.section2q10" class="form8item10radio1" type="radio" name="section2q10" id="aaf" value="Accept2" required>
+						<input x-model="form.section2q10" class="form8item10radio2" type="radio" name="section2q10" id="aag" value="Reject2">
+						<textarea x-model="form.comment[26]" class="form8item10comment" placeholder="Escribe tus notas aquí"></textarea>
+
+						<div class="borderline23"></div>
+			
+						<label class="form8item11">16. ¿El personal de Servicio ha acreditado el WBT del
+			Proceso Revisado de atención en Servicio?</label>
+						<input x-model="form.section2q11" class="form8item11radio1" type="radio" name="section2q11" id="aah" value="Accept2" required>
+						<input x-model="form.section2q11" class="form8item11radio2" type="radio" name="section2q11" id="aai" value="Reject2">
+						<textarea x-model="form.comment[27]" class="form8item11comment" placeholder="Escribe tus notas aquí"></textarea>
+						<p class="form8item11note">Verificar si han revisado el VIDEO y que cuenten con la infografía digital</p>
+
+						<div class="form8jobaid4_back">
+						<p class="form8jobaid4"><a href="https://share.gm.com/sites/gmmplanning/marketresearch/Market%20Research%20Studies/Customer%20Experience.aspx?e=4%3A9eb1bd76db5a4cc492aecc7afef58a29" target="_blank">Reportes de calidad de registros</a></p>
+						</div>
+									
+						<div class="form8jobaid5_back">			
+						<p class="form8jobaid5"><a href="https://generalmotors-my.sharepoint.com/:f:/r/personal/cz6fkv_nam_corp_gm_com/Documents/PROYECTO CSI?csf=1&web=1&e=xCvrhI" target="_blank">Esquema base comisiones por CSI</a></p>
+						</div>
+									
+						<div class="form8jobaid6_back">			
+						<p class="form8jobaid6"><a href="https://msbipbirs03.gm.com/Reports/browse/MAXIS/NonEDA/CCA-15418/CCA%20Mexico/Customer%20Experience" target="_blank">Dashboard verbatims - Encuestas de CSI</a></p>
+						</div>
+									
+						<div class="form8jobaid7_back">			
+						<p class="form8jobaid7">OnePager posventa CSI</p>
+						</div>
+									
+						<div class="form8jobaid8_back">			
+						<p class="form8jobaid8"><a href="https://www.centerlearning.com/Scorm/CourseOutline.asp?iQueryID1=40&sFieldName1=sStuffedCriteria&iDatatypeID1=2&iFilterID1=1&sCriteria1=tCourse%2EsCourseName%3AtCourse%2EsCourseNumber%3AtCourse%2EmCourseDescription%2C7%2C2%2Cpilares%7CtSortType%2EiSortTypeID%2C1%2C1%2C3%7CbActive%2C1%2C1%2C1&iResultSet1=1&iSectionID1=1&iPageID1=269&sPageName1=%2E%2E%2Fcatalog%2Findex%2Easp&iQueryID2=30&sFieldName2=tCourse%2EiCourseID&iDatatypeID2=25&iFilterID2=1&sCriteria2=23913&iResultSet2=1&iSectionID2=1&iPageID2=0&sPageName2=%2E%2E%2Fcatalog%2Fedit%2Easp&iRecordCount=2" target="blank">Proceso rediseñado "Atención a clientes en Servicio"</a>
+						<br><a href="https://gmm-cxboost.raytr.com/journey?id=bestPractices&mid=cx-bpmeta-02&aid=Proceso-servicio" target="_blank">Video e infografía digital</a></p>
+
+						</div>
+
+					</fieldset>
+
+					<p class="page2footer">Acordar acción requerida por parte del Distribuidor dentro del PLAN DE ACCIÓN para respuestas “NO”.</p>
+				</section>
+
+				<section class="sticky1">
+					<h2 class="cumplimiento1">Cumplimiento</h2>
+					<fieldset class="Compliance">
+						<label class="form3header1" for="complianceperc">Cumplimiento 1 - Observación en línea de Servicio (%)</label>
+						<span class="percentage" type="number" id="showPercent" name="complianceperc" x-text="`${((totals.accept * 100) / (15)).toFixed(2)} %`"></span>
+
+						<label class="form3item1" for="yescount">Sí</label>
+						<span id="showAccept" class="counter" name="si" x-text="totals.accept"></span>	
+						
+						<label class="form3item2" for="yescount">No</label>
+						<span class="counter" id="showReject" name="no" x-text="totals.reject"></span>
+
+						<label class="form7header1">Cumplimiento 2 - Sesión de trabajo con Gerente de Servicio y Líder de Calidad (%)</label>
+						<span class="counter" type="number" id="showPercent2" name="yescount2" x-text="`${((totals.accept2 * 100) / (16)).toFixed(2)} %`"></span>
+						
+						<label class="form7item1" for="yescount">Sí (cantidad)</label>
+						<span class="counter" type="number" id="showAccept2" name="yescount2" x-text="totals.accept2"></span>
+						
+						<label class="form7item2" for="yescount">No (cantidad)</label>
+							<span class="counter" type="number" id="showReject2" name="nocount2" x-text="totals.reject2"></span>
+
+					</fieldset>
+					
+				</section>
+	
+				<button id="sumbitBtn" class="Submit" name="submit" @click.prevent="savePdf"><img src="./images/GM_Gradient_Brandmark_RGB_small.png" alt="Submit button"><span>Enviar</span></button>
+			</form>
+
+		</main>
+	</body>	
+
+</html>
