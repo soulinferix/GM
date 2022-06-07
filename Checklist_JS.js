@@ -429,8 +429,8 @@ document.addEventListener('alpine:init', () => {
             const HTML_Height = elm.offsetHeight;
             const top_left_margin = 5;
 
-            let PDF_Width = HTML_Width + (top_left_margin * 2);
-            let PDF_Height = (PDF_Width * 2) + (top_left_margin * 2);
+            let PDF_Width = HTML_Width + (top_left_margin * 10);
+            let PDF_Height = (PDF_Width * 2) + (top_left_margin * 10);
             let canvas_image_width = HTML_Width;
             let canvas_image_height = HTML_Height;
 
